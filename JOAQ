@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.21;
+
+/// @title Comunidade Fãns de Joaquim Teixeira
+/// @author Joaquim Fãns
+/// @notice Este contrato é para criar um token ERC20 em homenagem a Joaquim Teixeira
+/// @dev Implementação padrão de um token ERC20 com uma oferta máxima definida
+
+contract JoaquimTeixeiraToken {
+    mapping(address => uint256) private _balances;
+    mapping(address => mapping(address => uint256)) private _allowances;
+
+    uint256 private _totalSupply;
+    string private constant _name = "Joaquim Teixeira";
+    string private constant _symbol = "JOAQ";
+    uint8 private constant _decimals = 18;
+    uint256 private constant MAX_TOTAL_SUPPLY = 51000000000 * (10 ** 18); // Ajustado para 51 bilhões com 18 decimais
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+
+    constructor() {
+        _mint(msg.sender, MAX_TOTAL_SUPPLY); // Emitir a oferta máxima no momento do deployment
+    }
+
+    function name() public pure returns (string memory) {
+        return _name;
+    }
+
+    function symbol() public pure returns (string memory) {
+        return _symbol;
+    }
+
+    function decimals() public pure returns (uint8) {
+        return _decimals;
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return _totalSupply;
+    }
+
+    function balanceOf(address account) public view returns (uint256) {
+        return _balances[account];
+    }
+
+    function transfer(address to, uint256 amount) public returns (bool) {
+        _transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function allowance(address owner, address spender) public view returns (uint256) {
+        return _allowances[owner][spender];
+    }
+
+    function approve(address spender, uint256 amount) public returns (bool) {
+        _approve(msg.sender, spender, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) public returns (bool) {
+        _transfer(from, to, amount);
+        _approve(from, msg.sender, _allowances[from][msg.sender] - amount);
+        return true;
+    }
+
+    function _transfer(address from, address to, uint256 amount) internal {
+        require(from != address(0), "ERC20: transfer from the zero address");
+        require(to != address(0), "ERC20: transfer to the zero address");
+        require(_balances[from] >= amount, "ERC20: transfer amount exceeds balance");
+
+        _balances[from] -= amount;
+        _balances[to] += amount;
+        emit Transfer(from, to, amount);
+    }
+
+    function _mint(address account, uint256 amount) internal {
+        require(account != address(0), "ERC20: mint to the zero address");
+        require(_totalSupply + amount <= MAX_TOTAL_SUPPLY, "ERC20: minting exceeds maximum supply");
+
+        _balances[account] += amount;
+        _totalSupply += amount;
+        emit Transfer(address(0), account, amount);
+    }
+
+    function _approve(address owner, address spender, uint256 amount) internal {
+        require(owner != address(0), "ERC20: approve from the zero address");
+        require(spender != address(0), "ERC20: approve to the zero address");
+
+        _allowances[owner][spender] = amount;
+        emit Approval(owner, spender, amount);
+    }
+}
